@@ -49,34 +49,45 @@
 			<form action="#" novalidate="novalidate">
 
 				<fieldset id="PasswdField">
-					<input id="Passwd" type="password" placeholder="Master password">
+					<input id="Passwd" type="password" placeholder="Master password" title="Master password">
 					<label for="Passwd" class="placeholder">Master password</label>
 					<canvas id="Canvas" width="16" height="16"></canvas>
 				</fieldset>
 
 				<fieldset id="SecretField" class="Option">
-					<input id="Secret" type="password" placeholder="Secret password">
+					<input id="Secret" type="password" placeholder="Secret password" title="Secret password">
 					<label for="Secret" class="placeholder">Secret password</label>
 				</fieldset>
-
-				<fieldset id="MethodField" class="Option">
-					<input id="MethodSHA512" name="Method" type="radio" value="sha512">
-					<label for="MethodSHA512" class="Button">SHA</label>
-					<input id="MethodMD5" name="Method" type="radio" value="md5" checked="checked">
-					<label for="MethodMD5" class="Button">MD5</label>
-				</fieldset>
-
-				<fieldset id="LenField" class="Option">
-					<input id="Len" type="text" pattern="[0-9]*" value="10" maxlength="2">
-					<label id="Down" class="Button">–</label><label id="Up" class="Button">+</label>
-				</fieldset>
+				<div class="OptionsRow">
+					<fieldset id="LenField" class="Option NumberFieldset">
+						<input id="Len" type="number" min="4" max="99" class="NumberInput" type="text" pattern="[0-9]*" value="10" maxlength="2" title="Password length">
+						<label id="Down" class="IncDown Button">–</label><label id="Up" class="IncUp Button">+</label>
+					</fieldset>
+					
+					<fieldset id="CounterField" class="Option NumberFieldset">
+						<input id="Counter" type="number" class="NumberInput" type="text" pattern="[0-9]*" value="0" maxlength="2" title="Password counter">
+						<label id="CounterDown" class="IncDown Button">–</label><label id="CounterUp" class="IncUp Button">+</label>
+					</fieldset>				
+					
+					<fieldset id="MethodField" class="Option">
+						<select name="Method" id="Method">
+							<option value="sha512">SHA</option>
+							<option value="md5">MD5</option>
+							<option value="bcrypt">BCR</option>
+						</select>
+					</fieldset>				
+				</div>
+				<fieldset id="CostField" class="Option NumberFieldset">
+					<input id="Cost" type="number" min="4" max="31" class="NumberInput" type="text" pattern="[0-9]*" value="10" maxlength="2" title="bCrypt Cost Factor">
+					<label id="CostDown" class="IncDown Button">–</label><label id="CostUp" class="IncUp Button">+</label>
+				</fieldset>				
 
 				<fieldset id="DomainField">
 					<input id="Domain" type="url" placeholder="Domain / URL" autocorrect="off" autocapitalize="off">
 					<label for="Domain" class="placeholder">Domain / URL</label>
 					<fieldset id="TLDField" class="Option">
 						<input id="DisableTLD" type="checkbox" value="disabled">
-						<label for="DisableTLD">TLD</label>
+						<label for="DisableTLD" title="Remove Subdomains">TLD</label>
 					</fieldset>
 				</fieldset>
 

@@ -83,7 +83,7 @@ fieldset {
    border: none;
 }
 
-input {
+input, select {
    background-color: #fff;
    border: solid 2px #ccc;
    border-radius: 4px;
@@ -94,7 +94,7 @@ input {
    -moz-appearance: none;
 }
 
-input:focus {
+input:focus, select:focus {
    outline: none;
    border-color: #9bc;
 }
@@ -166,19 +166,19 @@ label.placeholder {
 }
 
 
-/* Length field */
+/* Length, Cost, Counter fields */
 
-#LenField input {
+.NumberInput {
    float: left;
-   width: 38px;
+   width: 46px;
    height: 31px;
    margin: 0;
    padding: 5px;
    font-size: 14px;
-   border-radius: 4px 0 0 4px;
+   border-radius: 4px 4px 4px 4px;
 }
 
-#LenField label {
+.NumberFieldset label {
    float: left;
    width: 24px;
    height: 16px;
@@ -195,53 +195,41 @@ label.placeholder {
    cursor: pointer;
 }
 
-#LenField label:hover {
+.NumberFieldset label:hover {
    color: #000;
 }
 
-#LenField label:first-of-type {
+.NumberFieldset label:first-of-type {
    padding-left: 2px;
    border-radius: 0;
 }
 
-#LenField label:last-of-type {
+.NumberFieldset label:last-of-type {
    padding-right: 2px;
    border-radius: 0 4px 4px 0;
 }
 
+#LenField, #CounterField {
+	display: inline;
+	margin-right: 8px;
+}
+
+.NumberFieldset label.Button {
+	display:none;
+}
 
 /* Method toggle */
 
+#Method {
+   width: 60px;
+   height: 31px;
+   -webkit-appearance: menulist;
+   -moz-appearance: menulist;
+}
+
 #MethodField {
+   display: block;
    float: right;
-}
-
-input[type="radio"] {
-   display: none;
-}
-
-input[type="radio"] + label {
-   float: right;
-   width: 48px;
-   height: 16px;
-   margin: 0;
-   padding: 6px 0;
-   color: #999;
-   background-color: #ccc;
-   text-align: center;
-   border-bottom: solid 2px #999;
-   cursor: pointer;
-}
-
-input[type="radio"] + label:hover {
-   color: #000;
-}
-
-input[type="radio"]:checked + label {
-   color: #fff;
-   background-color: #356;
-   font-weight: bold;
-   border-bottom: solid 2px #023;
 }
 
 #MethodField label:first-of-type {
