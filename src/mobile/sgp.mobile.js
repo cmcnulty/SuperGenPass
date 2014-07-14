@@ -2,7 +2,8 @@
 
 // Load requirements.
 var $ = require('jquery');
-var sgp = require('supergenpass-lib');
+var spicySgp = require('./lib/spicygenpass-lib');
+var sgp = require ('supergenpass-lib');
 var md5 = require('crypto-js/md5');
 var sha512 = require('crypto-js/sha512');
 var identicon = require('./lib/identicon5');
@@ -50,6 +51,9 @@ var selectors =
     'DomainLabel',
     'DisableTLD',
     'Len',
+	'Method',
+	'Cost',
+	'Counter',
     'Generate',
     'Mask',
     'Output',
@@ -60,11 +64,13 @@ var selectors =
   ];
 
 // Retrieve user's configuration from local storage, if available.
-var config = {
-  passwordLength: storage.local.getItem('Len') || 10,
-  masterSecret:   storage.local.getItem('Salt') || '',
-  hashMethod:     storage.local.getItem('Method') || 'md5',
-  disableTLD:     storage.local.getItem('DisableTLD') || ''
+var defaultConfig = {
+  length: 10,
+  secret: '',
+  method: 'md5',
+  disableTLD: false, //meaning that the TLD is struck-through/option is checked - which means that subdomains will *not* be removed by default
+  costFactor: 10,
+  counter: 0
 };
 
 var showUpdateNotification = function (data) {
@@ -74,20 +80,28 @@ var showUpdateNotification = function (data) {
 };
 
 // Populate domain with referrer, if available and not from a search engine.
-var populateReferrer = function (referrer) {
+var getReferrer = function (referrer, disableTLD) {
   if (referrer) {
     referrer = sgp.hostname(referrer, {removeSubdomains: false});
     if (searchEngines.indexOf(referrer) === -1) {
-      $el.Domain.val(sgp.hostname(referrer, {removeSubdomains: !config.disableTLD}));
+      return sgp.hostname(referrer, {removeSubdomains: !disableTLD});
     }
   }
+  return '';
 };
+
+
 
 // Listen for postMessage from bookmarklet.
 var listenForBookmarklet = function (event) {
-
   // Gather information.
   var post = event.originalEvent;
+
+  // fix event leak of bcrypt library
+  if( post.data === 'process-tick' ) {
+    return;
+  }
+
   messageSource = post.source;
   messageOrigin = post.origin;
 
@@ -109,7 +123,8 @@ var listenForBookmarklet = function (event) {
   });
 
   // Populate domain field and call back with the browser height.
-  $el.Domain.val(sgp.hostname(messageOrigin, {removeSubdomains: !config.disableTLD})).trigger('change');
+  var hostname = sgp.hostname(messageOrigin, {removeSubdomains: !config.disableTLD});
+  $el.Domain.val( hostname ).trigger('change');
   sendDocumentHeight();
 
 };
@@ -122,7 +137,7 @@ var sendDocumentHeight = function () {
 };
 
 // Send generated password to bookmarklet.
-var sendGeneratedPassword = function (generatedPassword) {
+var sendGeneratedPassword = function ( generatedPassword ) {
   postMessageToBookmarklet({
     result: generatedPassword
   });
@@ -137,16 +152,19 @@ var postMessageToBookmarklet = function (message) {
 };
 
 // Save configuration to local storage.
-var saveConfiguration = function (masterSecret, passwordLength, hashMethod, disableTLD) {
-  storage.local.setItem('Salt', masterSecret);
-  storage.local.setItem('Len', passwordLength);
-  storage.local.setItem('Method', hashMethod);
-  storage.local.setItem('DisableTLD', disableTLD || '');
+var saveConfiguration = function (domain, configObject) {
+
+    configObject.disableTLD = !configObject.removeSubdomains;
+    delete configObject.removeSubdomains;
+    delete configObject.passwordProgress;
+    delete configObject.passwordComplete;
+  
+	storage.local.setItem( domain , JSON.stringify( configObject ) );
 };
 
 // Get selected hash method.
 var getHashMethod = function () {
-  return $('input:radio[name=Method]:checked').val() || 'md5';
+  return $el.Method.val() || 'md5';
 };
 
 // Validate password length.
@@ -212,6 +230,9 @@ var generatePassword = function () {
   var domain = $el.Domain.val().replace(/ /g, '');
   var passwordLength = validatePasswordLength($el.Len.val());
   var disableTLD = $el.DisableTLD.is(':checked');
+  var costFactor = $el.Cost.val();
+  var counter = $el.Counter.val();
+  var mask_len = 16;
 
   // Process domain value.
   domain = (domain) ? sgp.hostname(domain, {removeSubdomains: !disableTLD}) : '';
@@ -234,33 +255,55 @@ var generatePassword = function () {
   // Generate password.
   if(masterPassword && domain) {
 
+    var passwordComplete = function( generatedPassword ){
+      // Send generated password to bookmarklet.
+      sendGeneratedPassword( generatedPassword );
+
+      // Save form input to local storage.
+      saveConfiguration( domain, options );
+
+      // Blur input fields.
+      $el.Inputs.trigger('blur');
+
+      // Show masked generated password.
+      $el.Generate.hide();
+      $el.Output.text(generatedPassword);
+      $el.Mask.show();
+
+      // Bind hotkey for revealing generated password.
+      shortcut.add('Ctrl+H', toggleGeneratedPassword);
+
+    };
+	
+    var passwordProgress = function( i ){
+      var prog = new Array( Math.floor( i * mask_len ) + 1).join( '*' );
+      $el.Mask.text( prog );
+    };	
+	
     // Compile SGP options hash.
     var options = {
       secret: masterSecret,
       length: passwordLength,
       method: hashMethod,
-      removeSubdomains: !disableTLD
+      removeSubdomains: !disableTLD,
+      costFactor: costFactor,
+      callback: passwordComplete,
+      progress: passwordProgress,
+      counter: counter
     };
 
-    // Generate password.
-    var generatedPassword = sgp(masterPassword, domain, options);
-
-    // Send generated password to bookmarklet.
-    sendGeneratedPassword(generatedPassword);
-
-    // Save form input to local storage.
-    saveConfiguration(masterSecret, passwordLength, hashMethod, disableTLD);
-
-    // Blur input fields.
-    $el.Inputs.trigger('blur');
-
-    // Show masked generated password.
+    // add counter to the masterPassword
+    masterPassword += counter === "0" ? "" : counter;
+	
     $el.Generate.hide();
-    $el.Output.text(generatedPassword);
-    $el.Mask.show();
-
-    // Bind hotkey for revealing generated password.
-    shortcut.add('Ctrl+H', toggleGeneratedPassword);
+    $el.Mask.show();	
+	
+    // Generate password.
+	if( hashMethod === 'bcrypt' ) {
+		spicySgp(masterPassword, domain, options );
+	} else {
+		passwordComplete( sgp(masterPassword, domain, options ) );
+	}
 
   }
 
@@ -313,17 +356,19 @@ var clearGeneratedPassword = function (event) {
 };
 
 // Adjust password length.
-var adjustPasswordLength = function (event) {
+var adjustNumber = function (validation, event) {
 
   // Get length increment.
-  var increment = ( $(this).attr('id') == 'Up' ) ? 1 : -1;
+  var $button = $( event.currentTarget );
+  var increment = ( $button.hasClass('IncUp') ) ? 1 : -1;
+  var $field = $button.closest('fieldset').find('input');
 
   // Calculate new password length.
-  var passwordLength = validatePasswordLength($el.Len.val());
-  var newPasswordLength = validatePasswordLength(passwordLength + increment);
+  var passwordLength = validation($field.val());
+  var newPasswordLength = validation(passwordLength + increment);
 
   // Update form with new password length.
-  $el.Len.val(newPasswordLength).trigger('change');
+  $field.val(newPasswordLength).trigger('change');
 
   // Prevent event default action.
   event.preventDefault();
@@ -332,6 +377,7 @@ var adjustPasswordLength = function (event) {
 
 // Toggle advanced options.
 var toggleAdvancedOptions = function () {
+  toggleCostFactor();
   $('body').toggleClass('Advanced');
   sendDocumentHeight();
 };
@@ -357,16 +403,31 @@ var toggleTLDIndicator = function () {
   $el.DomainField.toggleClass('Advanced', $(this).is(':checked'));
 };
 
+var toggleCostFactor = function(){
+  $('#CostField').toggle( getHashMethod() === 'bcrypt' );
+  sendDocumentHeight();
+};
+
 // Populate selector cache.
 $el.Inputs = $('input');
 $.each(selectors, function (i, val) {
   $el[val] = $('#' + val);
 });
 
+
+var initDomain = getReferrer( document.referrer, $el.DisableTLD.is(':checked') );
+
+// Populate domain with referrer, if available.
+$el.Domain.val( initDomain );
+
+var config = $.extend({}, defaultConfig, JSON.parse( storage.local.getItem( initDomain ) ) );
+
 // Load user's configuration (or defaults) into form.
-$('input:radio[value=' + config.hashMethod + ']').prop('checked', true);
-$el.Len.val(validatePasswordLength(config.passwordLength));
-$el.Secret.val(config.masterSecret).trigger('change');
+$el.Method.val(config.method);
+$el.Len.val(validatePasswordLength(config.length));
+$el.Cost.val(config.costFactor);
+$el.Counter.val(config.counter);
+$el.Secret.val(config.secret).trigger('change');
 $el.DisableTLD.prop('checked', config.disableTLD).trigger('change');
 
 // Perform localization, if requested.
@@ -389,23 +450,27 @@ if ( !('placeholder' in document.createElement('input')) ) {
 $el.Generate.on('click', generatePassword);
 $el.Mask.on('click', toggleGeneratedPassword);
 $el.Options.on('click', toggleAdvancedOptions);
-$('#Up, #Down').on('click', adjustPasswordLength);
+
+$('#Up, #Down').on('click', adjustNumber.bind( null, validatePasswordLength ) );
+$('#CostUp, #CostDown').on('click', adjustNumber.bind( null, spicySgp.validateCost ) );
+$('#CounterUp, #CounterDown').on('click', adjustNumber.bind( null, function( i ){ return parseInt( i, 10 ); } ) );
 
 // Bind to form events.
 $el.DisableTLD.on('change', toggleAlternateDomain);
 $el.DisableTLD.on('change', toggleTLDIndicator);
 $el.Inputs.on('keydown change', clearGeneratedPassword);
 $('#Passwd, #Secret, #MethodField').on('keyup change', generateIdenticon);
+$('#MethodField').on('keyup change', toggleCostFactor);
 
 // Bind to hotkeys.
 shortcut.add('Ctrl+O', toggleAdvancedOptions);
 shortcut.add('Ctrl+G', generatePassword);
 
-// Populate domain with referrer, if available.
-populateReferrer(document.referrer);
-
 // Set focus on password field.
 $el.Passwd.trigger('focus').trigger('change');
+
+// Initialize proper state of Cost
+toggleCostFactor();
 
 // Attach postMessage listener for bookmarklet.
 $(window).on('message', listenForBookmarklet);
