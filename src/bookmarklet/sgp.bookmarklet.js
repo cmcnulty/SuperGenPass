@@ -1,9 +1,9 @@
 (function ($) {
 
   // Configuration
-  var version = 20140624;
-  var domain = 'https://chriszarate.github.io';
-  var mobile = 'https://chriszarate.github.io/supergenpass/mobile/';
+  var version = 20140715;
+  var domain = 'https://d2avz253iirfi.cloudfront.net';
+  var mobile = 'https://d2avz253iirfi.cloudfront.net/mobile/';
   var minFrameArea = 100000;
   var loadedSGP = false;
 
