@@ -209,9 +209,9 @@ label.placeholder {
    border-radius: 0 4px 4px 0;
 }
 
-#LenField, #CounterField {
+#LenField, #CounterField, #CostField {
 	display: inline;
-	margin-right: 8px;
+	margin-right: 6px;
 }
 
 .NumberFieldset label.Button {
@@ -221,8 +221,10 @@ label.placeholder {
 /* Method toggle */
 
 #Method {
-   width: 60px;
+   width: 68px;
    height: 31px;
+   padding: 5px;
+   font-size: 14px;   
    -webkit-appearance: menulist;
    -moz-appearance: menulist;
 }
