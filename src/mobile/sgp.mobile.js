@@ -15,7 +15,7 @@ var messageOrigin = false;
 var messageSource = false;
 var language = location.search.substring(1);
 var latestBookmarklet = '../bookmarklet/bookmarklet.min.js';
-var latestVersion = 20140624;
+var latestVersion = 20140715;
 var alternateDomain = '';
 
 // Major search engine referral hostnames.
@@ -158,8 +158,10 @@ var saveConfiguration = function (domain, configObject) {
     delete configObject.removeSubdomains;
     delete configObject.passwordProgress;
     delete configObject.passwordComplete;
+	var saveMe = JSON.stringify( configObject );
   
-	storage.local.setItem( domain , JSON.stringify( configObject ) );
+	storage.local.setItem( domain , saveMe );
+	storage.local.setItem( 'default' , saveMe );
 };
 
 // Get selected hash method.
@@ -409,18 +411,17 @@ var toggleCostFactor = function(){
 };
 
 // Populate selector cache.
-$el.Inputs = $('input');
+$el.Inputs = $('input, select');
 $.each(selectors, function (i, val) {
   $el[val] = $('#' + val);
 });
-
 
 var initDomain = getReferrer( document.referrer, $el.DisableTLD.is(':checked') );
 
 // Populate domain with referrer, if available.
 $el.Domain.val( initDomain );
 
-var config = $.extend({}, defaultConfig, JSON.parse( storage.local.getItem( initDomain ) ) );
+var config = $.extend({}, defaultConfig, JSON.parse( storage.local.getItem( 'default' ) ), JSON.parse( storage.local.getItem( initDomain ) ) );
 
 // Load user's configuration (or defaults) into form.
 $el.Method.val(config.method);
