@@ -68,6 +68,11 @@
 						<input id="Counter" type="number" class="NumberInput" type="text" pattern="[0-9]*" value="0" maxlength="2" title="Password counter">
 						<label id="CounterDown" class="IncDown Button">–</label><label id="CounterUp" class="IncUp Button">+</label>
 					</fieldset>				
+
+					<fieldset id="CostField" class="Option NumberFieldset">
+						<input id="Cost" type="number" min="4" max="31" class="NumberInput" type="text" pattern="[0-9]*" value="10" maxlength="2" title="bCrypt Cost Factor">
+						<label id="CostDown" class="IncDown Button">–</label><label id="CostUp" class="IncUp Button">+</label>
+					</fieldset>				
 					
 					<fieldset id="MethodField" class="Option">
 						<select name="Method" id="Method">
@@ -77,10 +82,6 @@
 						</select>
 					</fieldset>				
 				</div>
-				<fieldset id="CostField" class="Option NumberFieldset">
-					<input id="Cost" type="number" min="4" max="31" class="NumberInput" type="text" pattern="[0-9]*" value="10" maxlength="2" title="bCrypt Cost Factor">
-					<label id="CostDown" class="IncDown Button">–</label><label id="CostUp" class="IncUp Button">+</label>
-				</fieldset>				
 
 				<fieldset id="DomainField">
 					<input id="Domain" type="url" placeholder="Domain / URL" autocorrect="off" autocapitalize="off">
