@@ -58,7 +58,7 @@
     };
 
     // Define CSS properties.
-    var boxStyle = 'z-index:99999;position:absolute;top:0;right:5px;width:258px;margin:0;padding:0;box-sizing:content-box;background-color:#fff;height:210px;';	
+    var boxStyle = 'z-index:99999;position:absolute;top:0;right:5px;width:258px;margin:0;padding:0;box-sizing:content-box;';	
     var titleBarStyle = 'overflow:hidden;width:258px;height:20px;margin:0;padding:0;text-align:right;background-color:#356;cursor:move;box-sizing:content-box;';
     var closeLinkStyle = 'padding:0 5px;color:#fff;font-size:18px;line-height:20px;cursor:pointer;';
     var frameStyle = 'position:static;width:258px;height:190px;border:none;overflow:hidden;pointer-events:auto;';
@@ -93,15 +93,6 @@
     $titleBar.append($closeLink);
 
 	$box.append($titleBar, $frame).appendTo($('body', $target));
-	if( $box.find('iframe').length === 1 ) {
-		console.log('success');
-		console.log( $box.find('iframe').prop('src') );
-	} else {
-		console.log('fail');
-		if(confirm("open SGP in a popup?")) {
-			window.open(mobile,'','width=258, height=190');
-		}
-	}
 
     // Attach postMessage listener for responses from SGP generator.
     $(window).on('message', function (e) {
@@ -136,17 +127,6 @@
       loadedSGP = true;
     });
 
-    // Set timeout to see if SGP has loaded; otherwise assume that loading was
-    // blocked by an origin policy or other content security setting.
-    setTimeout(function() {
-      if( !loadedSGP ) {
-        if(confirm("open SGP in a popup?")) {
-          // will be blocked by pop-up blocker
-          window.open(mobile,'','width=258, height=190');
-        }
-      }
-    }, 2000);	
-	
     /*
       Start drag listener.
       Adapted from jQuery console bookmarklet:
@@ -201,6 +181,16 @@
   });
 
   document.getElementsByTagName('head')[0].appendChild(s);
-
+  
+  // Set timeout to see if SGP has loaded; otherwise assume that loading was
+  // blocked by an origin policy or other content security setting.
+  setTimeout(function() {
+    if( !loadedSGP ) {
+      if(confirm("open SGP in a popup?")) {
+        // will be blocked by pop-up blocker
+        window.open(mobile,'','width=258, height=190');
+      }
+    }
+  }, 2000);	
 
 })(window.jQuery);
