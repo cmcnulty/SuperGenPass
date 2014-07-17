@@ -1,11 +1,10 @@
-(function ($) {
+(function () {
 
   // Configuration
   var version = 20140715;
   var domain = 'https://d2avz253iirfi.cloudfront.net';
   var mobile = 'https://d2avz253iirfi.cloudfront.net/mobile/';
   var minFrameArea = 100000;
-  var loadedSGP = false;
 
   // Main
   var loadSGP = function($) {
@@ -59,17 +58,18 @@
     };
 
     // Define CSS properties.
-    var boxStyle = 'z-index:99999;position:absolute;top:0;right:5px;width:258px;margin:0;padding:0;box-sizing:content-box;';
+    var boxStyle = 'z-index:99999;position:absolute;top:0;right:5px;width:258px;margin:0;padding:0;box-sizing:content-box;background-color:#fff;height:210px;';	
     var titleBarStyle = 'overflow:hidden;width:258px;height:20px;margin:0;padding:0;text-align:right;background-color:#356;cursor:move;box-sizing:content-box;';
     var closeLinkStyle = 'padding:0 5px;color:#fff;font-size:18px;line-height:20px;cursor:pointer;';
     var frameStyle = 'position:static;width:258px;height:190px;border:none;overflow:hidden;pointer-events:auto;';
 
     // Create SGP elements.
     var $box = $('<div/>', {style: boxStyle});
+	
     var $titleBar = $('<div/>', {style: titleBarStyle});
     var $closeLink = $('<span/>', {style: closeLinkStyle}).append('×');
     var $frame = $('<iframe/>', {src: mobile, scrolling: 'no', style: frameStyle});
-
+	
     // Find largest viewport, looping through frames if applicable.
     $('frame').filter(isLocalFrame).each(findBiggestFrame);
     $('iframe', $target).filter(isLocalFrame).each(findBiggestFrame);
@@ -91,7 +91,17 @@
 
     // Append SGP window to target document.
     $titleBar.append($closeLink);
-    $box.append($titleBar, $frame).appendTo($('body', $target));
+
+	$box.append($titleBar, $frame).appendTo($('body', $target));
+	if( $box.find('iframe').length === 1 ) {
+		console.log('success');
+		console.log( $box.find('iframe').prop('src') );
+	} else {
+		console.log('fail');
+		if(confirm("open SGP in a popup?")) {
+			window.open(mobile,'','width=258, height=190');
+		}
+	}
 
     // Attach postMessage listener for responses from SGP generator.
     $(window).on('message', function (e) {
@@ -126,6 +136,17 @@
       loadedSGP = true;
     });
 
+    // Set timeout to see if SGP has loaded; otherwise assume that loading was
+    // blocked by an origin policy or other content security setting.
+    setTimeout(function() {
+      if( !loadedSGP ) {
+        if(confirm("open SGP in a popup?")) {
+          // will be blocked by pop-up blocker
+          window.open(mobile,'','width=258, height=190');
+        }
+      }
+    }, 2000);	
+	
     /*
       Start drag listener.
       Adapted from jQuery console bookmarklet:
@@ -164,29 +185,22 @@
     http://pastie.org/462639
   */
 
-  var hasJQuery = $ && $.fn && parseFloat($.fn.jquery) >= 1.7 && loadSGP($);
-
-  if(!hasJQuery) {
-
-    var s = document.createElement('script');
-    s.src = '//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js';
-    s.onload = s.onreadystatechange = function() {
-      var state = this.readyState;
-      if(!state || state === 'loaded' || state === 'complete') {
-        loadSGP(jQuery.noConflict());
-      }
-    };
-
-    document.getElementsByTagName('head')[0].appendChild(s);
-
-  }
-
-  // Set timeout to see if SGP has loaded; otherwise assume that loading was
-  // blocked by an origin policy or other content security setting.
-  setTimeout(function() {
-    if(!loadedSGP) {
-      window.location = mobile;
+  var s = document.createElement('script');
+  s.src = '//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js';
+  s.onload = s.onreadystatechange = function() {
+    var state = this.readyState;
+    if(!state || state === 'loaded' || state === 'complete') {
+      loadSGP(jQuery.noConflict());
     }
-  }, 2000);
+  };
+
+  s.addEventListener('error', function(){ 
+    if(confirm("Open SuperGenPass in a popup?")) {
+      window.open(mobile,'','width=258, height=190');
+    }
+  });
+
+  document.getElementsByTagName('head')[0].appendChild(s);
+
 
 })(window.jQuery);
