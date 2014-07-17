@@ -58,18 +58,17 @@
     };
 
     // Define CSS properties.
-    var boxStyle = 'z-index:99999;position:absolute;top:0;right:5px;width:258px;margin:0;padding:0;box-sizing:content-box;';	
+    var boxStyle = 'z-index:99999;position:absolute;top:0;right:5px;width:258px;margin:0;padding:0;box-sizing:content-box;';
     var titleBarStyle = 'overflow:hidden;width:258px;height:20px;margin:0;padding:0;text-align:right;background-color:#356;cursor:move;box-sizing:content-box;';
     var closeLinkStyle = 'padding:0 5px;color:#fff;font-size:18px;line-height:20px;cursor:pointer;';
     var frameStyle = 'position:static;width:258px;height:190px;border:none;overflow:hidden;pointer-events:auto;';
 
     // Create SGP elements.
     var $box = $('<div/>', {style: boxStyle});
-	
     var $titleBar = $('<div/>', {style: titleBarStyle});
     var $closeLink = $('<span/>', {style: closeLinkStyle}).append('×');
     var $frame = $('<iframe/>', {src: mobile, scrolling: 'no', style: frameStyle});
-	
+
     // Find largest viewport, looping through frames if applicable.
     $('frame').filter(isLocalFrame).each(findBiggestFrame);
     $('iframe', $target).filter(isLocalFrame).each(findBiggestFrame);
@@ -91,8 +90,7 @@
 
     // Append SGP window to target document.
     $titleBar.append($closeLink);
-
-	$box.append($titleBar, $frame).appendTo($('body', $target));
+    $box.append($titleBar, $frame).appendTo($('body', $target));
 
     // Attach postMessage listener for responses from SGP generator.
     $(window).on('message', function (e) {
@@ -191,6 +189,6 @@
         window.open(mobile,'','width=258, height=190');
       }
     }
-  }, 2000);	
+  }, 2000);
 
 })(window.jQuery);
