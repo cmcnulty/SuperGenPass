@@ -173,9 +173,7 @@
   };
 
   s.addEventListener('error', function(){ 
-    if(confirm("Open SuperGenPass in a popup?")) {
-      window.open(mobile,'','width=258, height=190');
-    }
+    window.open(mobile,'','width=258, height=190');
   });
 
   document.getElementsByTagName('head')[0].appendChild(s);
@@ -184,10 +182,8 @@
   // blocked by an origin policy or other content security setting.
   setTimeout(function() {
     if( !loadedSGP ) {
-      if(confirm("open SGP in a popup?")) {
-        // will be blocked by pop-up blocker
-        window.open(mobile,'','width=258, height=190');
-      }
+      // will be blocked by pop-up blocker
+      window.open(mobile,'','width=258, height=190');
     }
   }, 2000);
 
