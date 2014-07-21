@@ -211,7 +211,7 @@ label.placeholder {
 
 #LenField, #CounterField, #CostField {
 	display: inline;
-	margin-right: 6px;
+	margin-right: 2px;
 }
 
 .NumberFieldset label.Button {
