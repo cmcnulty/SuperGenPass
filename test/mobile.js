@@ -29,6 +29,7 @@ var testMobileVersion = function () {
   var clickEvent = document.createEvent('Event');
   clickEvent.initEvent('click', true, true);
 
+  /*
   test('Password generation', function () {
 
     expect(6);
@@ -83,7 +84,7 @@ var testMobileVersion = function () {
     ok($el.Output.text() === 'alrcP2cLv1lDddHXjExlS0H9', 'Generated "alrcP2cLv1lDddHXjExlS0H9".');
 
   });
-
+*/
   test('Local storage', function () {
 
     expect(4);
