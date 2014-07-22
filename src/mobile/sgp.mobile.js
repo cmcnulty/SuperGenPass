@@ -2,7 +2,7 @@
 
 // Load requirements.
 var $ = require('jquery');
-var spicySgp = require('./lib/spicygenpass-lib');
+var spicySgp = require('bcryptgenpass-lib');
 var sgp = require ('supergenpass-lib');
 var md5 = require('crypto-js/md5');
 var sha512 = require('crypto-js/sha512');
