@@ -63,13 +63,12 @@ var selectors =
     'Bookmarklet'
   ];
 
-// Retrieve user's configuration from local storage, if available.
 var defaultConfig = {
-  length: 10,
+  length: 12,
   secret: '',
   method: 'md5',
-  disableTLD: false, //meaning that the TLD is struck-through/option is checked - which means that subdomains will *not* be removed by default
-  costFactor: 10,
+  disableTLD: false,
+  costFactor: 12,
   counter: 0
 };
 
@@ -89,8 +88,6 @@ var getReferrer = function (referrer, disableTLD) {
   }
   return '';
 };
-
-
 
 // Listen for postMessage from bookmarklet.
 var listenForBookmarklet = function (event) {
@@ -173,10 +170,11 @@ var getHashMethod = function () {
 var validatePasswordLength = function (passwordLength) {
 
   // Password length must be an integer.
-  passwordLength = parseInt(passwordLength, 10) || 10;
+  passwordLength = parseInt(passwordLength, 10) || 12;
 
-  // Return a password length in the valid range.
-	return Math.max(4, Math.min(passwordLength, 24));
+  // Max out the length at 24 for purely UI reasons,
+  // Bcryptgenpass-lib can support 160 char passwords
+  return Math.max(4, Math.min(passwordLength, 24));
 
 };
 
@@ -204,7 +202,6 @@ var generateIdenticon = function () {
   var hashMethod = getHashMethod();
 
   if(masterPassword || masterSecret) {
-
     // Compute identicon hash.
     var identiconHash = generateIdenticonHash(masterPassword + masterSecret, hashMethod);
 
@@ -213,14 +210,11 @@ var generateIdenticon = function () {
 
     // Show identicon.
     $el.Canvas.show();
-
+	
   } else {
-
     // Hide identicon if there is no form input.
     $el.Canvas.hide();
-
   }
-
 };
 
 var generatePassword = function () {
@@ -357,26 +351,6 @@ var clearGeneratedPassword = function (event) {
 
 };
 
-// Adjust password length.
-var adjustNumber = function (validation, event) {
-
-  // Get length increment.
-  var $button = $( event.currentTarget );
-  var increment = ( $button.hasClass('IncUp') ) ? 1 : -1;
-  var $field = $button.closest('fieldset').find('input');
-
-  // Calculate new password length.
-  var passwordLength = validation($field.val());
-  var newPasswordLength = validation(passwordLength + increment);
-
-  // Update form with new password length.
-  $field.val(newPasswordLength).trigger('change');
-
-  // Prevent event default action.
-  event.preventDefault();
-
-};
-
 // Toggle advanced options.
 var toggleAdvancedOptions = function () {
   toggleCostFactor();
@@ -425,11 +399,17 @@ var config = $.extend({}, defaultConfig, JSON.parse( storage.local.getItem( 'def
 
 // Load user's configuration (or defaults) into form.
 $el.Method.val(config.method);
-$el.Len.val(validatePasswordLength(config.length));
-$el.Cost.val(config.costFactor);
-$el.Counter.val(config.counter);
+$el.Len.val(validatePasswordLength(config.length)).on('change', $.proxy( validateNumber, null, validatePasswordLength) );
+$el.Cost.val(config.costFactor).on('change', $.proxy( validateNumber, null, spicySgp.validateCost ) );
+$el.Counter.val(config.counter).on('change', $.proxy( validateNumber, null, function( i ){ return parseInt( i, 10 ); } ) );
 $el.Secret.val(config.secret).trigger('change');
 $el.DisableTLD.prop('checked', config.disableTLD).trigger('change');
+
+function validateNumber( validator, e ) {
+	e.currentTarget.value = validator( e.currentTarget.value );
+}
+
+
 
 // Perform localization, if requested.
 if (language && localizations.hasOwnProperty(language)) {
