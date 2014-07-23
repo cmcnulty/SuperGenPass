@@ -83,7 +83,7 @@ var showUpdateNotification = function (data) {
 var getReferrer = function (referrer, disableTLD) {
   if (referrer) {
     referrer = sgp.hostname(referrer, {removeSubdomains: false});
-    if (searchEngines.indexOf(referrer) === -1) {
+    if ($.inArray(referrer, searchEngines) === -1) {
       return sgp.hostname(referrer, {removeSubdomains: !disableTLD});
     }
   }
@@ -324,7 +324,7 @@ var clearGeneratedPassword = function (event) {
   var key = event.which;
 
   // Test for input key codes.
-  var group1 = ([8, 32].indexOf(key) !== -1);
+  var group1 = ($.inArray(key, [8, 32]) !== -1);
   var group2 = (key > 45 && key < 91);
   var group3 = (key > 95 && key < 112);
   var group4 = (key > 185 && key < 223);
@@ -451,10 +451,6 @@ if ( !('placeholder' in document.createElement('input')) ) {
 $el.Generate.on('click', generatePassword);
 $el.Mask.on('click', toggleGeneratedPassword);
 $el.Options.on('click', toggleAdvancedOptions);
-
-$('#Up, #Down').on('click', adjustNumber.bind( null, validatePasswordLength ) );
-$('#CostUp, #CostDown').on('click', adjustNumber.bind( null, spicySgp.validateCost ) );
-$('#CounterUp, #CounterDown').on('click', adjustNumber.bind( null, function( i ){ return parseInt( i, 10 ); } ) );
 
 // Bind to form events.
 $el.DisableTLD.on('change', toggleAlternateDomain);
