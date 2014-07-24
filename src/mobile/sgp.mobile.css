@@ -214,6 +214,31 @@ label.placeholder {
 	margin-right: 2px;
 }
 
+#CostField::before, #CounterField::before, #LenField::before {
+	position: absolute;
+	top: -9px;
+	left: 4px;
+	font-size: x-small;
+	background-color: white;
+	padding-left: 2px;
+	padding-right: 2px;
+	color: darkgray;
+}
+
+#CostField::before {
+	content: "Cost";
+}
+
+#CounterField::before {
+	content: "Count";
+}
+
+#LenField::before {
+	content: "Length";
+}
+
+
+
 .NumberFieldset label.Button {
 	display:none;
 }

@@ -1,6 +1,8 @@
 'use strict';
 
 // Load requirements.
+window.JSON = require('json-fallback');
+
 var $ = require('jquery');
 var spicySgp = require('bcryptgenpass-lib');
 var sgp = require ('supergenpass-lib');
@@ -230,6 +232,8 @@ var generatePassword = function () {
   var counter = $el.Counter.val();
   var mask_len = 16;
 
+  
+  
   // Process domain value.
   domain = (domain) ? sgp.hostname(domain, {removeSubdomains: !disableTLD}) : '';
   alternateDomain = (domain) ? sgp.hostname(domain, {removeSubdomains: disableTLD}) : '';
@@ -252,6 +256,9 @@ var generatePassword = function () {
   if(masterPassword && domain) {
 
     var passwordComplete = function( generatedPassword ){
+	
+      $el.Mask.on('click', toggleGeneratedPassword);
+	
       // Send generated password to bookmarklet.
       sendGeneratedPassword( generatedPassword );
 
@@ -292,7 +299,7 @@ var generatePassword = function () {
     masterPassword += counter === "0" ? "" : counter;
 	
     $el.Generate.hide();
-    $el.Mask.show();	
+    $el.Mask.show().off('click');
 	
     // Generate password.
 	if( hashMethod === 'bcrypt' ) {
