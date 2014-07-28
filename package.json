@@ -3,9 +3,10 @@
   "version": "0.3.1",
   "dependencies": {
     "supergenpass-lib": "^1.0.0",
-	"bcryptgenpass-lib": "^0.0.7",
+	"bcryptgenpass-lib": "^0.0.10",
     "crypto-js": "^3.1.2",
-    "jquery": "^2.1.0"
+    "jquery": "^1.11.1",
+	"json-fallback": "0.0.1"
   },
   "devDependencies": {
     "browserify": "^4.1.11",
