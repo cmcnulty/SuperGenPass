@@ -232,8 +232,6 @@ var generatePassword = function () {
   var counter = $el.Counter.val();
   var mask_len = 16;
 
-  
-  
   // Process domain value.
   domain = (domain) ? sgp.hostname(domain, {removeSubdomains: !disableTLD}) : '';
   alternateDomain = (domain) ? sgp.hostname(domain, {removeSubdomains: disableTLD}) : '';
