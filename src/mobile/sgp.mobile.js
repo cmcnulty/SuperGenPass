@@ -1,7 +1,13 @@
 'use strict';
 
-// Load requirements.
-window.JSON = require('json-fallback');
+// Load polyfills
+var polyJSON = require('json-fallback');
+if( window.JSON === undefined ) {
+	window.JSON = polyJSON;
+}
+
+// contents of excanvas.js only run for non-canvas browsers (IE<=8)
+require('./lib/excanvas');
 
 var $ = require('jquery');
 var spicySgp = require('bcryptgenpass-lib');
@@ -12,12 +18,14 @@ var identicon = require('./lib/identicon5');
 var shortcut = require('./lib/shortcut');
 var storage = require('./lib/localstorage-polyfill');
 
+
+
 // Set default values.
 var messageOrigin = false;
 var messageSource = false;
 var language = location.search.substring(1);
 var latestBookmarklet = '../bookmarklet/bookmarklet.min.js';
-var latestVersion = 20140715;
+var latestVersion = 20140731;
 var alternateDomain = '';
 
 // Major search engine referral hostnames.
@@ -172,12 +180,17 @@ var getHashMethod = function () {
 var validatePasswordLength = function (passwordLength) {
 
   // Password length must be an integer.
-  passwordLength = parseInt(passwordLength, 10) || 12;
+  passwordLength = parseInt(passwordLength, 10) || defaultConfig.length;
 
   // Max out the length at 24 for purely UI reasons,
   // Bcryptgenpass-lib can support 160 char passwords
   return Math.max(4, Math.min(passwordLength, 24));
 
+};
+
+var validateCost = function ( cost ) {
+	// floor should normalize to either a number or NaN, then min/max it to between 4 an 31 (hard-coded in bCrypt)
+	return Math.min( 31, Math.max( 4, Math.floor( cost ) || defaultConfig.costFactor ) );
 };
 
 // Generate hexadecimal hash for identicons.
@@ -395,6 +408,10 @@ $.each(selectors, function (i, val) {
   $el[val] = $('#' + val);
 });
 
+// remove and add the Canvas for IE<=8 excanvas polyfill
+$el.Canvas.remove();
+$el.Canvas = $( "<canvas height='16' width='16' id='Canvas'/>" ).appendTo('#PasswdField');
+
 var initDomain = getReferrer( document.referrer, $el.DisableTLD.is(':checked') );
 
 // Populate domain with referrer, if available.
@@ -405,7 +422,7 @@ var config = $.extend({}, defaultConfig, JSON.parse( storage.local.getItem( 'def
 // Load user's configuration (or defaults) into form.
 $el.Method.val(config.method);
 $el.Len.val(validatePasswordLength(config.length)).on('change', $.proxy( validateNumber, null, validatePasswordLength) );
-$el.Cost.val(config.costFactor).on('change', $.proxy( validateNumber, null, spicySgp.validateCost ) );
+$el.Cost.val(config.costFactor).on('change', $.proxy( validateNumber, null, validateCost ) );
 $el.Counter.val(config.counter).on('change', $.proxy( validateNumber, null, function( i ){ return parseInt( i, 10 ); } ) );
 $el.Secret.val(config.secret).trigger('change');
 $el.DisableTLD.prop('checked', config.disableTLD).trigger('change');
@@ -441,8 +458,8 @@ $el.Options.on('click', toggleAdvancedOptions);
 $el.DisableTLD.on('change', toggleAlternateDomain);
 $el.DisableTLD.on('change', toggleTLDIndicator);
 $el.Inputs.on('keydown change', clearGeneratedPassword);
-$('#Passwd, #Secret, #MethodField').on('keyup change', generateIdenticon);
-$('#MethodField').on('keyup change', toggleCostFactor);
+$('#Passwd, #Secret, #Method').on('keyup change', generateIdenticon);
+$('#Method').on('keyup change', toggleCostFactor);
 
 // Bind to hotkeys.
 shortcut.add('Ctrl+O', toggleAdvancedOptions);
