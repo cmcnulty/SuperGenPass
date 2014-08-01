@@ -431,8 +431,6 @@ function validateNumber( validator, e ) {
 	e.currentTarget.value = validator( e.currentTarget.value );
 }
 
-
-
 // Perform localization, if requested.
 if (language && localizations.hasOwnProperty(language)) {
   $el.Passwd.attr('placeholder', localizations[language][0]);
