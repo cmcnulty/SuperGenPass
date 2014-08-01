@@ -3,7 +3,7 @@
   "version": "0.3.1",
   "dependencies": {
     "supergenpass-lib": "^1.0.0",
-	"bcryptgenpass-lib": "^0.0.10",
+	"bcryptgenpass-lib": "^0.1.1",
     "crypto-js": "^3.1.2",
     "jquery": "^1.11.1",
 	"json-fallback": "0.0.1"
@@ -15,7 +15,7 @@
     "grunt-contrib-clean": "^0.5.0",
     "grunt-contrib-concat": "^0.1.3",
     "grunt-contrib-cssmin": "^0.6.2",
-    "grunt-contrib-jshint": "^0.2.0",
+    "grunt-contrib-jshint": "^0.10.0",
     "grunt-contrib-qunit": "^0.3.0",
     "grunt-contrib-uglify": "^0.1.2",
     "grunt-load-options": "^0.1.4",
