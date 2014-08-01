@@ -14,11 +14,11 @@ var spicySgp = require('bcryptgenpass-lib');
 var sgp = require ('supergenpass-lib');
 var md5 = require('crypto-js/md5');
 var sha512 = require('crypto-js/sha512');
+var zeroclipboard = require('zeroclipboard');
+var flashversion = require('./lib/flashversion');
 var identicon = require('./lib/identicon5');
 var shortcut = require('./lib/shortcut');
 var storage = require('./lib/localstorage-polyfill');
-
-
 
 // Set default values.
 var messageOrigin = false;
@@ -27,6 +27,13 @@ var language = location.search.substring(1);
 var latestBookmarklet = '../bookmarklet/bookmarklet.min.js';
 var latestVersion = 20140731;
 var alternateDomain = '';
+
+// ZeroClipboard configuration.
+var zeroClipboardConfig = {
+  bubbleEvents: false,
+  hoverClass: 'Hover',
+  activeClass: 'Active'
+};
 
 // Major search engine referral hostnames.
 var searchEngines = [
@@ -66,6 +73,8 @@ var selectors =
 	'Counter',
     'Generate',
     'Mask',
+    'MaskText',
+    'CopyButton',
     'Output',
     'Canvas',
     'Options',
@@ -268,7 +277,7 @@ var generatePassword = function () {
 
     var passwordComplete = function( generatedPassword ){
 	
-      $el.Mask.on('click', toggleGeneratedPassword);
+      $el.MaskText.on('click', toggleGeneratedPassword);
 	
       // Send generated password to bookmarklet.
       sendGeneratedPassword( generatedPassword );
@@ -291,7 +300,7 @@ var generatePassword = function () {
 	
     var passwordProgress = function( i ){
       var prog = new Array( Math.floor( i * mask_len ) + 1).join( '*' );
-      $el.Mask.text( prog );
+      $el.MaskText.text( prog );
     };	
 	
     // Compile SGP options hash.
@@ -310,7 +319,8 @@ var generatePassword = function () {
     masterPassword += counter === "0" ? "" : counter;
 	
     $el.Generate.hide();
-    $el.Mask.show().off('click');
+    $el.Mask.show();
+	$el.MaskText.off('click');
 	
     // Generate password.
 	if( hashMethod === 'bcrypt' ) {
@@ -402,6 +412,14 @@ var toggleCostFactor = function(){
   sendDocumentHeight();
 };
 
+// Update copy button to show successful clipboard copy. Remove success
+// indicator after a few seconds.
+var updateCopyButton = function () {
+  $el.CopyButton.addClass('Success');
+  setTimeout(function () {
+    $el.CopyButton.removeClass('Success');
+  }, 5000);
+};
 // Populate selector cache.
 $el.Inputs = $('input, select');
 $.each(selectors, function (i, val) {
@@ -447,9 +465,15 @@ if ( !('placeholder' in document.createElement('input')) ) {
   }).trigger('change');
 }
 
+// Activate copy-to-clipboard button if browser has Flash.
+if (flashversion >= 11) {
+  zeroclipboard.config(zeroClipboardConfig);
+  new zeroclipboard($el.CopyButton.show()).on('aftercopy', updateCopyButton);
+}
+
 // Bind to interaction events.
 $el.Generate.on('click', generatePassword);
-$el.Mask.on('click', toggleGeneratedPassword);
+$el.MaskText.on('click', toggleGeneratedPassword);
 $el.Options.on('click', toggleAdvancedOptions);
 
 // Bind to form events.
