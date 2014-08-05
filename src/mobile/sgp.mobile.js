@@ -250,28 +250,36 @@ var generatePassword = function () {
       secret: masterSecret,
       length: passwordLength,
       method: hashMethod,
-      removeSubdomains: !disableTLD
+      removeSubdomains: !disableTLD,
+      deferred: $.Deferred()
     };
 
     // Generate password.
     var generatedPassword = sgp(masterPassword, domain, options);
+    if( generatedPassword !== undefined ) {
+      options.deferred.resolve( generatedPassword );
+    }
 
-    // Send generated password to bookmarklet.
-    sendGeneratedPassword(generatedPassword);
+    options.deferred.done(function( finalPassword ){
 
-    // Save form input to local storage.
-    saveConfiguration(masterSecret, passwordLength, hashMethod, disableTLD);
+      // Send generated password to bookmarklet.
+      sendGeneratedPassword(finalPassword);
 
-    // Blur input fields.
-    $el.Inputs.trigger('blur');
+      // Save form input to local storage.
+      saveConfiguration(masterSecret, passwordLength, hashMethod, disableTLD);
 
-    // Show masked generated password.
-    $el.Generate.hide();
-    $el.Output.text(generatedPassword);
-    $el.Mask.show();
+      // Blur input fields.
+      $el.Inputs.trigger('blur');
 
-    // Bind hotkey for revealing generated password.
-    shortcut.add('Ctrl+H', toggleGeneratedPassword);
+      // Show masked generated password.
+      $el.Generate.hide();
+      $el.Output.text(finalPassword);
+      $el.Mask.show();
+
+      // Bind hotkey for revealing generated password.
+      shortcut.add('Ctrl+H', toggleGeneratedPassword);	
+
+    });
 
   }
 
